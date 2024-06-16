@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import About from './components/About.js';
 import Setting from './components/Setting.js';
+import PageLabel from './components/Pagelabel.js';
 
 function HomeScreen() {
   return (
@@ -35,7 +36,15 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Tab.Navigator>
+      <Tab.Navigator
+               screenOptions={({ route }) => ({
+                headerTitle: () => <PageLabel labelText={route.name} />,
+                headerStyle: {
+                  backgroundColor: '#fff',
+                },
+                headerTitleAlign: 'center', // Ensure the title is centered
+              })}
+      >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Settings" component={SettingsScreen} />
         <Tab.Screen name="About" component={AboutScreen} />
