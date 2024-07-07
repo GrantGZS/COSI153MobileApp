@@ -2,13 +2,14 @@ import React, { useEffect, useContext, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { AuthContext } from './AuthContext';
 
-const Profile = ({ navigation }) => {
-  const { authState } = useContext(AuthContext);
-  const { token } = authState;
+const Profile = () => {
+  const { authState, updateTrainingPlan } = useContext(AuthContext);
+  const { token, trainingPlan } = authState;
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      console.log('Fetching profile with token:', token);
       try {
         const response = await fetch('http://localhost:8080/api/user/profile', {
           method: 'GET',
@@ -24,12 +25,16 @@ const Profile = ({ navigation }) => {
 
         const data = await response.json();
         setProfile(data);
+        console.log('in fetchProfile trainingPlan ',data.trainingPlan);
+        //updateTrainingPlan(data.trainingPlan); 
+        console.log('in fetchProfile at the end trainingPlan', trainingPlan);
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
     };
 
     fetchProfile();
+    console.log(' after fetchprofile called in fetchProfile at the end trainingPlan', trainingPlan);
   }, [token]);
 
   if (!profile) {
@@ -48,7 +53,7 @@ const Profile = ({ navigation }) => {
       <Text>Mode: {profile.mode}</Text>
       <Text>Training Plan:</Text>
       <FlatList
-        data={profile.trainingPlan.exercises}
+        data={trainingPlan}
         keyExtractor={(item, index) => `${item.name}-${index}`}
         renderItem={({ item }) => (
           <View style={styles.exerciseContainer}>

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "concurrently \"npm run start:backend\" \"npm run start:mongo\" \"npm run start:frontend\"",
+    "start": "npm run start:frontend",
     "start:backend": "nodemon backend/backend.js",
     "start:mongo": "mongod --dbpath ~/data/db",
     "start:frontend": "expo start",
@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "expo": "~51.0.14",
+    "expo-dev-client": "^4.0.19",
     "expo-status-bar": "~1.12.1",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",

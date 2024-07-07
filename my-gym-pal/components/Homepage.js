@@ -15,8 +15,25 @@ const HomePage = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      await login(loginUsername, loginPassword);
-      Alert.alert('Login Successful', 'You have successfully logged in');
+      console.log('handleLogin in Homepage hit');
+      const response = await fetch('http://localhost:8080/api/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('handleLogin successful:', result);
+        login(loginUsername, result.token, result.trainingPlan); // Call login with token and training plan
+        Alert.alert('Login Successful', 'You have successfully logged in');
+      } else {
+        console.log('handleLogin failed:', result.message);
+        Alert.alert('Login Failed', result.message);
+      }
     } catch (error) {
       console.error('Error logging in:', error);
       Alert.alert('Login Failed', 'An error occurred while logging in');

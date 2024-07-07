@@ -7,13 +7,15 @@ const AuthProvider = ({ children }) => {
     isLoggedIn: false,
     username: '',
     token: '',
+    trainingPlan: [],
   });
 
-  const login = (username, token) => {
+  const login = (username, token, trainingPlan) => {
     setAuthState({
       isLoggedIn: true,
       username,
       token,
+      trainingPlan,
     });
   };
 
@@ -22,11 +24,22 @@ const AuthProvider = ({ children }) => {
       isLoggedIn: false,
       username: '',
       token: '',
+      trainingPlan: [],
     });
   };
 
+  const updateTrainingPlan = (newPlan) => {
+    setAuthState((prevState) => ({
+      isLoggedIn: prevState.isLoggedIn,
+      username: prevState.username,
+      token: prevState.token,
+      trainingPlan: [...prevState.trainingPlan, ...newPlan],
+    }));
+    console.log('in authcontext updatetrainingplan',authState.trainingPlan);
+  };
+
   return (
-    <AuthContext.Provider value={{ authState, login, logout }}>
+    <AuthContext.Provider value={{ authState, login, logout, updateTrainingPlan }}>
       {children}
     </AuthContext.Provider>
   );

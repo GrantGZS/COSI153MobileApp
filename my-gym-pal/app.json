@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-Calculator",
-    "slug": "my-Calculator",
+    "name": "my-gym-pal",
+    "slug": "my-gym-pal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

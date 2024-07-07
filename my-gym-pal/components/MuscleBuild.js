@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { CheckBox, Picker, View, Text, StyleSheet, Button, FlatList, TouchableOpacity } from 'react-native';
-
+import React, { useState, useContext } from 'react';
+import { CheckBox, Picker, View, Text, StyleSheet, Button, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { AuthContext } from './AuthContext';
+import TrainingPlan from '../backend/models/TrainingPlan';
 
 const MuscleBuild = () => {
   const [muscle, setMuscle] = useState('');
   const [exercises, setExercises] = useState([]);
+  const { authState, updateTrainingPlan } = useContext(AuthContext);
+  const { token } = authState;
 
   const fetchExercises = async () => {
     try {
@@ -25,10 +28,34 @@ const MuscleBuild = () => {
     setExercises(newExercises);
   };
 
-  const handleSaveToPlan = () => {
-    const selectedItems = exercises.filter(exercise => exercise.selected);
+  const handleSaveToPlan = async () => {
+    const selectedItems = exercises.filter(exercise => exercise.selected).map(({ selected, ...exercise }) => exercise);
     console.log('Selected Exercises:', selectedItems);
+    console.log('will fetch with token: ',authState.token);
     // Save selectedItems to user's training plan in the backend
+    try {
+      const response = await fetch('http://localhost:8080/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authState.token}`,
+        },
+        body: JSON.stringify({ trainingPlan: selectedItems }),
+      });
+      
+      if (response.ok) {
+        updateTrainingPlan(selectedItems);
+        console.log('Training Plan Updated', 'Your training plan has been updated successfully.');
+        console.log('after update the trainingPlan is ',authState.trainingPlan);
+        Alert.alert('Training Plan Updated', 'Your training plan has been updated successfully.');
+      } else {
+        const result = await response.json();
+        Alert.alert('Update Failed', result.message);
+      }
+    } catch (error) {
+      console.error('Error updating training plan:', error);
+      Alert.alert('Update Failed', 'An error occurred while updating your training plan.');
+    }
   };
 
   return (
@@ -36,7 +63,7 @@ const MuscleBuild = () => {
       <Text style={styles.label}>Select Target Muscle:</Text>
       <Picker
         selectedValue={muscle}
-        style={styles.picker}
+        style={styles.picker}s
         onValueChange={(itemValue) => setMuscle(itemValue)}
       >
         <Picker.Item label="Biceps" value="biceps" />

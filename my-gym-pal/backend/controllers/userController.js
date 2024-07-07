@@ -1,7 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 const TrainingPlan = require('../models/TrainingPlan');
 
 // Register a new user
@@ -22,13 +21,11 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       height,
       weight,
-      mode
+      mode,
+      trainingPlan: [] // Initialize with an empty array
     });
     console.log('New user info:', newUser);
     await newUser.save();
-
-    const trainingPlan = new TrainingPlan({ userId: newUser._id, exercises: [] });
-    await trainingPlan.save();
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -43,7 +40,7 @@ exports.login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).populate('trainingPlan');
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
@@ -54,21 +51,30 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '1h' });
-
-    res.json({ token });
+    console.log('Generated token:', token);
+    res.json({ token, trainingPlan: user.trainingPlan });
   } catch (error) {
     console.error('Error in login:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
+
 // Get user profile
 exports.getProfile = async (req, res) => {
   console.log('Get profile endpoint hit');
+
+  if (!req.headers.authorization) {
+    return res.status(401).json({ message: 'Authorization header missing' });
+  }
+
   const token = req.headers.authorization.split(' ')[1];
+  console.log('Token received:', token);
 
   try {
     const decoded = jwt.verify(token, 'secretkey');
+    console.log('Decoded token:', decoded);
+    
     const user = await User.findById(decoded.id).populate('trainingPlan');
 
     if (!user) {
@@ -83,7 +89,7 @@ exports.getProfile = async (req, res) => {
       trainingPlan: user.trainingPlan
     });
   } catch (error) {
-    console.error('Error in getProfile:', error);
+    console.error('Error in getProfile:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -101,11 +107,13 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const { height, weight, mode } = req.body;
+    const { height, weight, mode, trainingPlan } = req.body;
 
     user.height = height || user.height;
     user.weight = weight || user.weight;
     user.mode = mode || user.mode;
+    user.trainingPlan= trainingPlan || user.trainingPlan;
+
 
     await user.save();
     res.json({ message: 'Profile updated successfully' });
